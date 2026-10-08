@@ -150,7 +150,7 @@ it("restores original BOM-prefixed JSONC bytes after update and removal", async 
   expect(await readFile(client.configPath, "utf8")).toBe(original);
 });
 
-it.each(["", "\n  \n", "﻿"])(
+it.each(["", "\n  \n", "\uFEFF"])(
   "configures an empty client file %j as a new document",
   async (original) => {
     const home = await createTestTempDirectory("rea-client-config-empty-");
