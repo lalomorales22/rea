@@ -84,6 +84,9 @@ const parseDocument = (
   const errors: ParseError[] = [];
   // Accept a UTF-8 BOM without shifting diagnostics or editing the original text.
   const jsonText = text.startsWith("\uFEFF") ? ` ${text.slice(1)}` : text;
+  // An empty file, which some clients create before any server is added,
+  // holds no settings to preserve.
+  if (jsonText.trim() === "") return {};
   const document = parseJsonc(jsonText, errors, { allowTrailingComma: true });
   const firstError = errors[0];
   if (firstError !== undefined)
@@ -188,7 +191,11 @@ export const serializeClientConfiguration = (
   if (format === undefined || format === "unsupported")
     throw new TypeError("client does not have a supported MCP config format");
   if (format === "toml") return stringifyToml(document);
-  if (originalText !== undefined && editedPaths !== undefined)
+  if (
+    originalText !== undefined &&
+    originalText.replace(/^\uFEFF/, "").trim() !== "" &&
+    editedPaths !== undefined
+  )
     return editedPaths.reduce(
       (text, path) =>
         applyEdits(
